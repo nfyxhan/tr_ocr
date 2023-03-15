@@ -15,8 +15,12 @@ WORKDIR /workdir
 # git clone https://github.com/myhub/tr.git 
 # git clonehttps://github.com/alisen39/TrWebOCR.git
 
-ADD setup.py .
-ADD tr  tr
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt
+
+ADD setup.py .
+ADD tr  tr
 RUN python3 setup.py install
+
+ADD main.py
+CMD python3 ./main.py
