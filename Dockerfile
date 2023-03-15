@@ -23,5 +23,5 @@ ADD tr  tr
 RUN python3 setup.py install
 ADD imgs imgs
 
-ADD main.py
+ADD main.py .
 CMD python3 ./main.py
