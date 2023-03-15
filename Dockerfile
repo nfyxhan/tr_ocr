@@ -21,6 +21,7 @@ RUN pip3 install -r requirements.txt
 ADD setup.py .
 ADD tr  tr
 RUN python3 setup.py install
+ADD imgs imgs
 
 ADD main.py
 CMD python3 ./main.py
