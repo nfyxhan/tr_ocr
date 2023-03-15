@@ -198,6 +198,6 @@ def make_app(port):
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    result = tr.recognize("imgs/line.png"))
+    result = tr.recognize("imgs/line.png")
     print(result[1])
     make_app(8090)
