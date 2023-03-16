@@ -73,7 +73,7 @@ def pre_run(img_pil):
         new_height = int(img_pil.height / scale + 0.5)
         img_pil = img_pil.resize((new_width, new_height), Image.ANTIALIAS)
     gray_pil = img_pil.convert("L")
-    color_pil = img_pil.convert("L")
+    color_pil = img_pil.convert("RGB")
     return gray_pil, color_pil
 
 #def run(gray_pil):
@@ -106,8 +106,10 @@ def run(gray_pil):
     result = []
     for i, rect in enumerate(results):
         if len(rect[1]) == 0:
+            print("nil str", rect)
             continue
         if rect[2] < 0.5:
+            print("less 0.5", rect)
             continue
         result.append(rect)
     return result
@@ -127,8 +129,25 @@ def compare(img_pil, results):
 
 class tr_run(tornado.web.RequestHandler):
     def get(self):
-        self.set_status(404)
-        self.write("404 : Please use POST")
+        r = json.loads(self.request.body)
+        img_b64 = r.get('img', None)
+        data = r.get('data', None)
+        if img_b64 is None or data is None:
+           self.set_status(400)
+           return
+        raw_image = base64.b64decode(img_b64.encode('utf8'))
+        img_pil = Image.open(BytesIO(raw_image))
+        gray_pil, color_pil = pre_run(img_pil)
+        print(data)
+        img_draw = compare(color_pil, data)
+        img_byte = BytesIO()
+        img_draw.save(img_byte, format="png")
+        img_b64 = base64.b64encode(img_byte.getvalue())
+        result =  {
+               'code': 200, 
+               'data': img_b64.decode(),
+               }
+        self.finish(json.dumps(result, cls=NpEncoder, ensure_ascii=False))
 
     @tornado.gen.coroutine
     def post(self):
@@ -198,6 +217,6 @@ def make_app(port):
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    result = tr.recognize("imgs/line.png")
-    print(result[1])
+    #result = tr.recognize("imgs/line.png")
+    #print(result[1])
     make_app(8090)
