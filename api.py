@@ -39,7 +39,7 @@ def getText(url, img, draw=False):
     return data
 
 if __name__ == "__main__":
-    url = "http://localhost:8090/api/tr-run/"
+    url = "http://localhost:8090/api/tr-run"
     img_path =  "imgs/id_card.jpeg"
     img = Image.open(img_path)
     draw = True
