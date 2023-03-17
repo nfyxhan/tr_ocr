@@ -8,6 +8,7 @@ _BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 import tornado.web
 import tornado.httpserver
+from tornado.options import define, options
 import tornado.ioloop
 import json
 import base64
@@ -19,7 +20,6 @@ from logging.handlers import RotatingFileHandler
 import datetime
 logger = logging.getLogger("tr" + '.' + __name__)
 logger.setLevel(logging.INFO)
-# Formatter
 formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] | %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
 
 logfile_name = datetime.date.today().__format__('%Y-%m-%d.log')
@@ -36,12 +36,11 @@ logger.addHandler(handler_logfile)
 #console_output.setFormatter(formatter)
 #logger.addHandler(console_output)
 
-
-
 os.chdir(_BASEDIR)
 settings = dict(
 )
 
+MAX_SIZE = 1600
 
 def rotate(x1,y1, x2, y2, a):
     x = (x1 - x2)*math.cos(math.pi / 180.0 * a) - (y1 - y2)*math.sin(math.pi / 180.0 * a) + x2; 
@@ -66,41 +65,27 @@ def pre_run(img_pil):
     except:
         pass
 
-    MAX_SIZE = 1600
     if img_pil.height > MAX_SIZE or img_pil.width > MAX_SIZE:
         scale = max(img_pil.height / MAX_SIZE, img_pil.width / MAX_SIZE)
         new_width = int(img_pil.width / scale + 0.5)
         new_height = int(img_pil.height / scale + 0.5)
         img_pil = img_pil.resize((new_width, new_height), Image.ANTIALIAS)
     gray_pil = img_pil.convert("L")
-    color_pil = img_pil.convert("RGB")
-    return gray_pil, color_pil
+#    color_pil = img_pil.convert("RGB")
+    return gray_pil
 
-#def run(gray_pil):
-#    t = time.time()
-#    width, height = gray_pil.size
-#    print("size", gray_pil.size)
-##    text = tr.recognize(gray_pil) #, flag=tr.FLAG_ROTATED_RECT)
-##    print("text", text)
-#    results = tr.detect(gray_pil, flag=tr.FLAG_ROTATED_RECT)
-#    print("detect",results)
-#    for i, rect in enumerate(results):
-#        # todo rect[4] 
-#        w, h = rect[2], rect[3]
-#        x1, y1 = width/2, height/2
-#        x2, y2 = rect[0]-w/2, rect[1]-h/2
-#        a = rect[4]
-#        x, y = rotate(x1, y1, x2, y2, a)
-#        box = (x, y, x+w, y+h) 
-#        sub_pil = gray_pil.rotate(a, expand=True).crop(box)
-#        #sub_pil.save("imgs/run/"+str(i)+".png")
-#        text = tr.recognize(sub_pil) #, flag=tr.FLAG_ROTATED_RECT)
-#        print(i, text)
-#    print("time", (time.time() - t))
-#    return 
+def convert_box(box, origin_size, size):
+    rate = [1,1]
+    box = list(box)
+    for i in range(2):
+        rate[i] = origin_size[i] / size[i]
+    for i in range(4):
+        box[i] = box[i]*rate[i%2]
+    return box 
 
-def run(gray_pil):
+def run(gray_pil, origin_size):
     t = time.time()
+    size = gray_pil.size
     results = tr.run(gray_pil, flag=tr.FLAG_ROTATED_RECT)
     logger.debug("result", results)
     result = []
@@ -111,6 +96,9 @@ def run(gray_pil):
         if rect[2] < 0.5:
             print("less 0.5", rect)
             continue
+        box = list(rect[0])
+        box = convert_box(box, origin_size, size)
+        rect = [box, rect[1], rect[2]]
         result.append(rect)
     return result
 
@@ -120,7 +108,6 @@ def compare(img_pil, results):
     colors = ['red', 'green', 'blue', "purple"]
     for i, rect in enumerate(results):
         cx, cy, w, h, a = tuple(rect[0])
-#        print(i, "\t", rect[1], rect[2], rect[0])
         box = cv2.boxPoints(((cx, cy), (w, h), a))
         box = np.int0(np.round(box))
         for p1, p2 in [(0, 1), (1, 2), (2, 3), (3, 0)]:
@@ -154,9 +141,9 @@ class tr_run(tornado.web.RequestHandler):
             return 
         logger.info(img_pil.size)
         origin_size = img_pil.size 
-        gray_pil, color_pil = pre_run(img_pil)
+        gray_pil = pre_run(img_pil)
         size = gray_pil.size
-        text_data = run(gray_pil)
+        text_data = run(gray_pil, origin_size)
         result =  {
                'code': 200, 
                'data': text_data,
@@ -167,7 +154,7 @@ class tr_run(tornado.web.RequestHandler):
         }
         logger.info(json.dumps(result, cls=NpEncoder, ensure_ascii=False))
         if draw:
-            img_draw = compare(color_pil, text_data)
+            img_draw = compare(img_pil, text_data)
             img_byte = BytesIO()
             img_draw.save(img_byte, format="png")
             img_b64 = base64.b64encode(img_byte.getvalue()).decode()
@@ -188,20 +175,19 @@ class NpEncoder(json.JSONEncoder):
 
 def make_app(port):
     app = tornado.web.Application([
-        (r"/api/tr-run/", tr_run),
-
+        (r"/api/tr-run", tr_run),
     ], **settings)
-
     server = tornado.httpserver.HTTPServer(app)
-    # server.listen(port)
     server.bind(port)
     server.start(1)
     print(f'Server is running: http://0.0.0.0:{port}')
-
-    # tornado.ioloop.IOLoop.instance().start()
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    #result = tr.recognize("imgs/line.png")
-    #print(result[1])
-    make_app(8090)
+    define("port", default=8090, type=int, help='指定运行时端口号')
+    define("maxsize", default=1600, type=int, help='指定图片最大尺寸')
+    tornado.options.parse_command_line()
+    port = options.port
+    MAX_SIZE = options.maxsize
+    make_app(port)
+
