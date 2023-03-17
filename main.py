@@ -129,25 +129,8 @@ def compare(img_pil, results):
 
 class tr_run(tornado.web.RequestHandler):
     def get(self):
-        r = json.loads(self.request.body)
-        img_b64 = r.get('img', None)
-        data = r.get('data', None)
-        if img_b64 is None or data is None:
-           self.set_status(400)
-           return
-        raw_image = base64.b64decode(img_b64.encode('utf8'))
-        img_pil = Image.open(BytesIO(raw_image))
-        gray_pil, color_pil = pre_run(img_pil)
-        print(data)
-        img_draw = compare(color_pil, data)
-        img_byte = BytesIO()
-        img_draw.save(img_byte, format="png")
-        img_b64 = base64.b64encode(img_byte.getvalue())
-        result =  {
-               'code': 200, 
-               'data': img_b64.decode(),
-               }
-        self.finish(json.dumps(result, cls=NpEncoder, ensure_ascii=False))
+        self.set_status(405)
+        self.write("405 : Please use POST")
 
     @tornado.gen.coroutine
     def post(self):
@@ -155,6 +138,7 @@ class tr_run(tornado.web.RequestHandler):
         img_up = self.request.files.get('file', None)
         r = json.loads(self.request.body)
         img_b64 = r.get('img', None)
+        draw = r.get('draw', False)
         img_pil = None
         if img_up is not None and len(img_up) > 0:
             img_up = img_up[0]
@@ -164,30 +148,31 @@ class tr_run(tornado.web.RequestHandler):
         elif img_b64 is not None:
             raw_image = base64.b64decode(img_b64.encode('utf8'))
             img_pil = Image.open(BytesIO(raw_image))
-#        else:
-#            img_path = "imgs/ch2.png"
-#            img_path = "imgs/ch.png"
-        #    img_path = "imgs/id_card.jpeg"
-#            img_pil = Image.open(img_path)
         if img_pil is None:
             logger.error(json.dumps({'code': 400, 'msg': u'没有传入参数'}, ensure_ascii=False))
             self.finish(json.dumps("img is none", cls=NpEncoder))
             return 
         logger.info(img_pil.size)
+        origin_size = img_pil.size 
         gray_pil, color_pil = pre_run(img_pil)
-    #    run(gray_pil)
-        results = run(gray_pil)
+        size = gray_pil.size
+        text_data = run(gray_pil)
         result =  {
                'code': 200, 
-               'data': results,
+               'data': text_data,
                "cost": time.time()-t,
+               "origin_size": origin_size,
+               "size": size,
+               "draw_img": draw,
         }
         logger.info(json.dumps(result, cls=NpEncoder, ensure_ascii=False))
+        if draw:
+            img_draw = compare(color_pil, text_data)
+            img_byte = BytesIO()
+            img_draw.save(img_byte, format="png")
+            img_b64 = base64.b64encode(img_byte.getvalue()).decode()
+            result['draw_img'] = img_b64
         self.finish(json.dumps(result, cls=NpEncoder, ensure_ascii=False))
-
-#        img_draw = compare(color_pil, results)
-#        img_draw.save("imgs/result.png")
-
         return
 
 class NpEncoder(json.JSONEncoder):
