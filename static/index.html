@@ -1,0 +1,170 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>图片文本识别</title>
+</head>
+
+<body>
+    <input type="file" id="upload">
+    <div class="img">
+        <p>image:</p>
+        <img id="img"></img>
+    </div>
+    <div class="text">
+        <p> result:</p>
+        <textarea id="fileOutput"></textarea>
+    </div>
+    <div>
+        <button id="submit">submit</button>
+    </div>
+</body>
+
+<script>
+    function post(image, draw = true) {
+        var data = {
+            "img": image,
+            "draw": draw,
+        }
+        url = "/api/tr-run"
+        httpRequest = new XMLHttpRequest()
+        httpRequest.open("POST", url, true)
+        httpRequest.setRequestHeader("Content-Type", "application/json")
+        httpRequest.send(JSON.stringify(data))
+        httpRequest.onreadystatechange = function () {
+            var status = httpRequest.status
+            var d = httpRequest.responseText
+            if (status != 200) {
+                alert(status.toString() + ":" + d)
+                return
+            }
+            if (httpRequest.readyState != 4) {
+                return
+            }
+            console.log(d)
+            var data = JSON.parse(d)
+            if (data.code != 200) {
+                alert(data)
+                return
+            }
+            var height = 0
+            var centerY = 0
+            var text = ""
+            for (const t of data.data) {
+                cy = t[0][1]
+                h = t[0][3]
+                if (centerY == 0) {
+                    centerY = cy
+                    height = h
+                }
+                if (!atLine(cy, centerY, h, height)) {
+                    height = h
+                    centerY = cy
+                    text += "\n"
+                }
+                text += t[1] + " "
+            }
+            setText(text)
+            var draw_img = data.draw_img
+            if (draw_img != null && draw_img != true && draw_img != false) {
+                setImageData(draw_img)
+            }
+        }
+    }
+
+    function atLine(cy1, cy2, h1, h2) {
+        cy = Math.abs(cy1 - cy2)
+        h = Math.max(h1, h2)
+        return cy <= h / 2
+    }
+
+    function setText(text) {
+        var output = document.getElementById("fileOutput");
+        output.textContent = text;
+    }
+    function setImageData(data) {
+        var img = document.getElementById("img")
+        img.src = "data:image/png;base64," + data
+    }
+    function arrayBufferToBase64(arrayBuffer) {
+        var uint8Array = new Uint8Array(arrayBuffer)
+        var str = ""
+        for (uint of uint8Array) {
+            str += String.fromCharCode(uint)
+        }
+        var data = window.btoa(str)
+        return data
+    }
+    function fileUploader() {
+        const input = document.getElementById("upload");
+        input.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length == 0) {
+                return
+            }
+            const reader = new FileReader()
+            reader.onload = function (e) {
+                const arrayBuffer = e.target.result;
+                parseImage(arrayBuffer)
+            };
+            reader.readAsArrayBuffer(files[0])
+        }, false);
+    }
+    function parseImage(arrayBuffer) {
+        console.log(arrayBuffer)
+        var data = arrayBufferToBase64(arrayBuffer)
+        setImageData(data)
+        setText("loading")
+        post(data)
+    }
+    fileUploader()
+    document.getElementById("submit").addEventListener(
+        'click',
+        async (e) => {
+            try {
+                var hasImage = false
+                const clipboardItems = await navigator.clipboard.read();
+                for (const clipboardItem of clipboardItems) {
+                    for (const type of clipboardItem.types) {
+                        const blob = await clipboardItem.getType(type);
+                        console.log(type.toString(), blob.size)
+                        const arrayBuffer = await blob.arrayBuffer()
+                        if (type.toString().indexOf("image") > -1) {
+                            parseImage(arrayBuffer)
+                            hasImage = true
+                            break
+                        }
+                    }
+                }
+                if (!hasImage) {
+                    alert("剪贴板上未检测到图片")
+                }
+            } catch (error) {
+                alert(error)
+            }
+        }
+    )
+</script>
+<style>
+    .img {
+        width: 80%;
+        height: 40%;
+    }
+
+    .text {
+        width: 80%;
+        height: 40%;
+    }
+
+    img {
+        border: 1px solid black;
+        height: 80%;
+    }
+
+    textarea {
+        width: 100%;
+        height: 80%;
+    }
+</style>
+
+</html>
