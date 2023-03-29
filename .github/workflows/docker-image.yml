@@ -19,11 +19,10 @@ jobs:
       
     - name: Login to Ali Docker
       uses: docker/login-action@v1
-      # 配置登录信息，secrets 变量在 github settings -> secrets 中设置
       with:
-        registry: ${{ secrets.REGISTRY }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ REGISTRY }}
+        username: ${{ REGISTRY_USERNAME }}
+        password: ${{ REGISTRY_PASSWORD }}
         
     - name: Build and push
       id: docker_build
@@ -31,6 +30,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.REGISTRY }}/tc-ocr:v0.0.0
+        tags: ${{ REGISTRY }}/tc-ocr:v0.0.0
 
 
