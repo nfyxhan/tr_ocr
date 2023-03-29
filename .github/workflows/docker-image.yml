@@ -1,5 +1,11 @@
 name: Docker Image CI
 
+env:
+  REGISTRY: ${{ vars.REGISTRY }} 
+  REGISTRY2: ${{ secrets.REGISTRY }} 
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
 on:
   push:
     branches: [ "master" ]
@@ -14,12 +20,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: echo 1 ${{ vars.REGISTRY }} 2 ${{ secrets.REGISTRY_USERNAME }} 3 ${{ secrets.REGISTRY }}
+    - run: echo 1 $REGISTRY 2 $REGISTRY2 3 $REGISTRY_USERNAME
     #- name: Build the Docker image
     #  run: docker build . --file Dockerfile --tag registry.cn-hangzhou.aliyuncs.com/nfyxhan/tr_ocr:$(date +%s)
       
     - name: Login to Ali Docker
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ${{ vars.REGISTRY }}
         username: ${{ secrets.REGISTRY_USERNAME }}
@@ -31,6 +37,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ vars.REGISTRY }}/tc-ocr:v0.0.0
+        tags: ${{ vars.REGISTRY }}/tc-ocr:v${{ GITHUB_SHA }}
 
 
