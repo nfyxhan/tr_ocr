@@ -14,5 +14,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag registry.cn-hangzhou.aliyuncs.com/nfyxhan/tr_ocr:$(date +%s)
+    #- name: Build the Docker image
+    #  run: docker build . --file Dockerfile --tag registry.cn-hangzhou.aliyuncs.com/nfyxhan/tr_ocr:$(date +%s)
+      
+    - name: Login to Ali Docker
+      uses: docker/login-action@v1
+      # 配置登录信息，secrets 变量在 github settings -> secrets 中设置
+      with:
+        registry: ${{ secrets.REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.REGISTRY }}/tc-ocr:v0.0.0
+
+
