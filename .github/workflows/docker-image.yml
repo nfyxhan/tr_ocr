@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: echo 1 ${{ vars.REGISTRY }} 2 ${{ secrets.REGISTRY_USERNAME }} 3 ${{ secrets.REGISTRY }} 4 ${{ registry.REGISTRY_USERNAME }}
+    - run: echo 1 ${{ vars.REGISTRY }} 2 ${{ secrets.REGISTRY_USERNAME }} 3 ${{ secrets.REGISTRY }}
     #- name: Build the Docker image
     #  run: docker build . --file Dockerfile --tag registry.cn-hangzhou.aliyuncs.com/nfyxhan/tr_ocr:$(date +%s)
       
