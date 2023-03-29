@@ -4,7 +4,7 @@ env:
   REGISTRY: ${{ vars.REGISTRY }} 
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  GIT_SHA: ${GITHUB_SHA}
+  GIT_SHA: ${{ github.sha }}
 
 on:
   push:
@@ -20,9 +20,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: echo 1 $REGISTRY 3 $REGISTRY_USERNAME ${GIT_SHA}
-    #- name: Build the Docker image
-    #  run: docker build . --file Dockerfile --tag registry.cn-hangzhou.aliyuncs.com/nfyxhan/tr_ocr:${GIT_SHA}
+    
+    - run: echo ${GIT_SHA}
       
     - name: Login to Ali Docker
       uses: docker/login-action@v2
