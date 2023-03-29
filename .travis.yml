@@ -1,0 +1,10 @@
+language: shell
+services:
+- docker
+install: docker images 
+env:
+  global: 
+  - repo=nfyxhan_gcr
+  - registry=registry.cn-hangzhou.aliyuncs.com
+script:
+- docker build -t $registry/$repo/tr-ocr
