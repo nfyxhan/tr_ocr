@@ -1,10 +1,9 @@
 name: Docker Image CI
 
 env:
-  REGISTRY: ${{ vars.REGISTRY }} 
-  REGISTRY2: ${{ secrets.REGISTRY }} 
-  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  REGISTRY: ${{ env.REGISTRY }} 
+  REGISTRY_USERNAME: ${{ env.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ env.REGISTRY_PASSWORD }}
   GIT_SHA: ${{ github.GITHUB_SHA }}
 
 on:
@@ -21,7 +20,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: echo 1 $REGISTRY 2 $REGISTRY2 3 $REGISTRY_USERNAME
+    - run: echo 1 $REGISTRY 3 $REGISTRY_USERNAME ${GIT_SHA}
     #- name: Build the Docker image
     #  run: docker build . --file Dockerfile --tag registry.cn-hangzhou.aliyuncs.com/nfyxhan/tr_ocr:${GIT_SHA}
       
