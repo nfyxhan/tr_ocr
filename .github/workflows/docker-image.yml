@@ -4,7 +4,7 @@ env:
   REGISTRY: ${{ vars.REGISTRY }} 
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  GIT_SHA: ${{ github.GITHUB_SHA }}
+  GIT_SHA: ${GITHUB_SHA}
 
 on:
   push:
