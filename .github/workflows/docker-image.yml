@@ -1,9 +1,9 @@
 name: Docker Image CI
 
 env:
-  REGISTRY: ${{ env.REGISTRY }} 
-  REGISTRY_USERNAME: ${{ env.REGISTRY_USERNAME }}
-  REGISTRY_PASSWORD: ${{ env.REGISTRY_PASSWORD }}
+  REGISTRY: ${{ vars.REGISTRY }} 
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   GIT_SHA: ${{ github.GITHUB_SHA }}
 
 on:
