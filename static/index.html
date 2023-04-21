@@ -2,11 +2,15 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>图片文本识别</title>
+    <title>文字</title>
 </head>
 
 <body>
-    <input type="file" id="upload">
+    <div>
+        <input type="file" id="upload" accept=".png,.jpg,.jpeg">
+        <button id="submit">submit</button>
+        <input type="checkbox" id="change">change</input>
+    </div>
     <div class="img">
         <p>image:</p>
         <img id="img"></img>
@@ -15,18 +19,23 @@
         <p> result:</p>
         <textarea id="fileOutput"></textarea>
     </div>
-    <div>
-        <button id="submit">submit</button>
-    </div>
 </body>
 
 <script>
+    function getURLPath() {
+        var url = "/api/tr-run"
+        var change = document.getElementById("change")
+        if (change.checked) {
+            url = "/api/face-detection"
+        }
+        return url
+    }
     function post(image, draw = true) {
         var data = {
             "img": image,
             "draw": draw,
         }
-        url = "/api/tr-run"
+        var url = getURLPath()
         httpRequest = new XMLHttpRequest()
         httpRequest.open("POST", url, true)
         httpRequest.setRequestHeader("Content-Type", "application/json")
@@ -51,15 +60,24 @@
             var centerY = 0
             var text = ""
             for (const t of data.data) {
-                cy = t[0][1]
-                h = t[0][3]
+                if (t["box"] != null) {
+                    continue
+                }
+                if (t.length == 0) {
+                    continue
+                }
+                if (t[0].length < 4) {
+                    continue
+                }
+                var cy = t[0][1]
+                var h = t[0][3]
                 if (centerY == 0) {
                     centerY = cy
                     height = h
                 }
                 if (!atLine(cy, centerY, h, height)) {
-                    height = h
-                    centerY = cy
+                    centerY = Math.max(cy, centerY)
+                    height = Math.max(h, height)
                     text += "\n"
                 }
                 text += t[1] + " "
@@ -73,9 +91,10 @@
     }
 
     function atLine(cy1, cy2, h1, h2) {
-        cy = Math.abs(cy1 - cy2)
-        h = Math.max(h1, h2)
-        return cy <= h / 2
+        var cy = Math.abs(cy1 - cy2)
+        var h = Math.max(h1, h2)
+        var result = cy <= h / 2
+        return result
     }
 
     function setText(text) {
