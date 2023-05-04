@@ -4,8 +4,10 @@ RUN apt-get update && apt-get install -y \
     libsm6 libxext6 libxrender-dev && \ 
   apt-get autoclean && rm -rf /var/lib/apt/lists/* 
 ENV PATH="/opt/venv/bin:$PATH"
+WORKDIR /workdir
 ADD requirements.txt .
 ADD setup.py .
+ADD tr  tr
 RUN python3 -m venv /opt/venv
 RUN pip3 install -r requirements.txt --no-cache-dir
 RUN python3 setup.py install
