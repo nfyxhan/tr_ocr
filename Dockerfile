@@ -19,7 +19,8 @@ ENV  LC_ALL zh_CN.UTF-8
 RUN apt-get update && apt-get install -y \
     git curl vim \
     locales \
-    python3 && \ 
+    python3 \
+    libsm6 libxext6  libgomp1  libglib2.0-dev && \ 
   apt-get autoclean && rm -rf /var/lib/apt/lists/* && \
   locale-gen zh_CN && \
   locale-gen zh_CN.UTF-8
