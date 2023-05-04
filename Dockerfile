@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
   locale-gen zh_CN.UTF-8
 
 COPY --from=builder /opt/venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /workdir
