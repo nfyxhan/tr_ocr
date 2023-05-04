@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     git curl vim \
     locales \
     python3 python3-pip \
-    libsm6 libxext6 libxrender-dev && \
+    libsm6 libxext6 libxrender-dev && \ 
+  apt-get autoclean && rm -rf /var/lib/apt/lists/* && \
   locale-gen zh_CN && \
   locale-gen zh_CN.UTF-8
 
@@ -16,12 +17,10 @@ WORKDIR /workdir
 # git clonehttps://github.com/alisen39/TrWebOCR.git
 
 ADD requirements.txt .
-RUN pip3 install -r requirements.txt --no-cache-dir
-
 ADD setup.py .
 ADD tr  tr
-RUN python3 setup.py install
+RUN pip3 install -r requirements.txt --no-cache-dir && \
+  python3 setup.py install
 ADD imgs imgs
-
 ADD main.py .
 CMD python3 ./main.py
