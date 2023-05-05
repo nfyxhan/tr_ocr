@@ -27,12 +27,13 @@ ORT_SIZE = 256
 _BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 _cwd = os.getcwd()
-os.chdir(_BASEDIR)
+#os.chdir(_BASEDIR)
+workdir = os.getenv("WORKDIR", "/workdir/") + "tr/"
 
 if platform.system() == "Windows":
 	_libc = ctypes.cdll.LoadLibrary('./libtr.dll')
 else:
-    _libc = ctypes.cdll.LoadLibrary('./libtr.so')
+    _libc = ctypes.cdll.LoadLibrary(workdir+'libtr.so')
 assert _libc is not None
 os.chdir(_cwd)
 
@@ -135,7 +136,7 @@ def init(pid, id, model, arg=None):
     :return: None
     """
     _cwd = os.getcwd()
-    os.chdir(_BASEDIR)
+    #os.chdir(_BASEDIR)
 
     _libc.tr_init(pid, id, c_ptr(model), arg)
 
@@ -245,8 +246,8 @@ def run(img,
     return results
 
 
-init(0, 0, "ctpn.bin")
-init(0, 1, "crnn.bin")
+init(0, 0, workdir+"ctpn.bin")
+init(0, 1, workdir+"crnn.bin")
 
 if __name__ == "__main__":
     pass
