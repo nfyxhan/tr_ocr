@@ -1,4 +1,6 @@
 FROM  ubuntu:18.04 as builder
+ENV PATH="/opt/venv/bin:$PATH"
+WORKDIR /workdir
 RUN apt-get update && apt-get install -y \
     python3 python3-pip python3-venv \
     libsm6 libxext6 libxrender-dev libgomp1 libglib2.0-dev && \ 
@@ -6,8 +8,6 @@ RUN apt-get update && apt-get install -y \
   python3 -m venv /opt/venv && \
   pip3 install wheel --no-cache-dir && \
   pip3 install pyinstaller --no-cache-dir
-ENV PATH="/opt/venv/bin:$PATH"
-WORKDIR /workdir
 ADD requirements.txt .
 ADD setup.py .
 ADD tr  tr
