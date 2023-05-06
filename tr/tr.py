@@ -28,7 +28,7 @@ _BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 _cwd = os.getcwd()
 #os.chdir(_BASEDIR)
-workdir = os.getenv("WORKDIR", _BASEDIR) + "tr/"
+workdir = os.getenv("WORKDIR", _BASEDIR) +"/" #+ "tr/"
 
 if platform.system() == "Windows":
 	_libc = ctypes.cdll.LoadLibrary('./libtr.dll')
