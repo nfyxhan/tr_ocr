@@ -14,7 +14,7 @@ ADD tr  tr
 ADD main.py .
 RUN pip3 install -r requirements.txt --no-cache-dir  && \
     python3 setup.py install && \
-    pyinstaller -F ./main.py
+    pyinstaller -F ./main.py --add-data ./tr:./tr
 
 FROM  ubuntu:18.04
 ENV  LANGUAGE zh_CN.UTF-8
@@ -30,6 +30,6 @@ RUN apt-get update && apt-get install -y \
   
 WORKDIR /workdir
 COPY --from=builder /workdir/dist/main /workdir/tr_ocr
-ADD tr  tr
-ADD imgs imgs
+#ADD tr  tr
+#ADD imgs imgs
 CMD ./tr_ocr
