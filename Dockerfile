@@ -22,7 +22,7 @@ ENV  LANG zh_CN.UTF-8
 ENV  LC_ALL zh_CN.UTF-8
 RUN apt-get update && apt-get install -y \
     locales \
-    libgomp1 && \
+    libxcb1 libgomp1 && \
   apt-get autoclean && rm -rf /var/lib/apt/lists/* && \
   locale-gen zh_CN && \
   locale-gen zh_CN.UTF-8
