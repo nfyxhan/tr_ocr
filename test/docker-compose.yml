@@ -1,6 +1,6 @@
 version: '3'
 services:
-  app:
-    build: ../
+  tr-ocr:
+    image: "${REGISTRY}}/tc-ocr:v${GIT_SHA}"
     ports:
      - "8090:8090"
