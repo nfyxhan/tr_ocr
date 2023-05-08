@@ -32,18 +32,15 @@ jobs:
         context: .
         push: true
         tags: ${{ vars.REGISTRY }}/tc-ocr:v${{ env.GIT_SHA }}
-        
-  test:
-    runs-on: ubuntu-latest
-    steps:
+    
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Tests
       uses: cloudposse/github-action-docker-compose-test-run@main
       with:
         file: test/docker-compose.yml
-        service: app
+        service: tr-ocr
         command: test/unit-tests.sh
-        registry: ${{ vars.REGISTRY }}/tc-ocr:v${{ env.GIT_SHA }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
