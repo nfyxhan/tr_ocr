@@ -13,12 +13,11 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - run: echo ${GIT_SHA}
     - name: Login to Ali Docker
       uses: docker/login-action@v2
       with:
@@ -32,12 +31,6 @@ jobs:
         context: .
         push: true
         tags: ${{ vars.REGISTRY }}/tc-ocr:v${{ env.GIT_SHA }}
-    
-#   test:
-#     runs-on: ubuntu-latest
-#     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
     - name: Tests
       uses: cloudposse/github-action-docker-compose-test-run@main
       with:
