@@ -5,6 +5,7 @@ env:
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   GIT_SHA: ${{ github.sha }}
+  FULL_IMAGE: ${{ vars.REGISTRY }}/tc-ocr:v${{ github.sha }}
 
 on:
   push:
@@ -30,7 +31,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ vars.REGISTRY }}/tc-ocr:v${{ env.GIT_SHA }}
+        tags: ${{ env.FULL_IMAGE }}
     - name: Tests
       uses: cloudposse/github-action-docker-compose-test-run@main
       with:
